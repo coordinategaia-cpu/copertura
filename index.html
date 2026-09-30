@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Segnala copertura</title>
+<meta name="theme-color" content="#0d47a1">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Copertura">
+<style>
+  :root {
+    --blu: #0d47a1; --blu-chiaro: #e3ecfa; --testo: #1b1f24; --grigio: #5f6b7a;
+    --bordo: #cfd6df; --sfondo: #f4f6f9; --bianco: #fff;
+    --verde: #1b7f3b; --arancio: #b35900; --rosso: #b3261e;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--sfondo); color: var(--testo);
+    font: 17px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { background: var(--blu); color: #fff; padding: 12px 16px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+    display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 5; }
+  header h1 { font-size: 19px; margin: 0; flex: 1; }
+  header small { display: block; font-weight: 400; opacity: .85; font-size: 13px; }
+  header button { background: transparent; border: 1px solid rgba(255,255,255,.6); color: #fff;
+    border-radius: 8px; padding: 6px 10px; font-size: 14px; }
+  main { max-width: 560px; margin: 0 auto; padding: 12px 16px 120px; }
+  .card { background: var(--bianco); border: 1px solid var(--bordo); border-radius: 12px;
+    padding: 14px; margin-bottom: 12px; }
+  .card h2 { font-size: 15px; margin: 0 0 10px; color: var(--grigio); text-transform: uppercase; letter-spacing: .03em; }
+  .card h2 .obb { color: var(--rosso); }
+  .scelte { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
+  .scelte.tre { grid-template-columns: repeat(3, 1fr); }
+  .scelte.cinque { grid-template-columns: repeat(5, 1fr); }
+  .scelte button { min-height: 52px; border: 2px solid var(--bordo); background: var(--bianco);
+    border-radius: 10px; font-size: 16px; color: var(--testo); padding: 6px; }
+  .scelte button[aria-pressed="true"] { border-color: var(--blu); background: var(--blu-chiaro);
+    font-weight: 600; box-shadow: inset 0 0 0 1px var(--blu); }
+  .gps { display: flex; gap: 12px; align-items: center; }
+  .gps .pallino { width: 14px; height: 14px; border-radius: 50%; background: var(--bordo); flex: none; }
+  .gps.cerca .pallino { background: var(--arancio); animation: pulsa 1s infinite alternate; }
+  .gps.buona .pallino { background: var(--verde); }
+  .gps.scarsa .pallino { background: var(--arancio); }
+  .gps.errore .pallino { background: var(--rosso); }
+  @keyframes pulsa { to { opacity: .3; } }
+  .gps div { flex: 1; }
+  .gps strong { display: block; }
+  .gps span { color: var(--grigio); font-size: 14px; }
+  .secondario { border: 1px solid var(--blu); color: var(--blu); background: var(--bianco);
+    border-radius: 8px; padding: 8px 12px; font-size: 15px; }
+  textarea, input { width: 100%; font: inherit; padding: 10px; border: 2px solid var(--bordo);
+    border-radius: 10px; background: var(--bianco); color: var(--testo); }
+  textarea:focus, input:focus { outline: none; border-color: var(--blu); }
+  label { display: block; font-weight: 600; margin: 12px 0 6px; }
+  label:first-of-type { margin-top: 0; }
+  .aiuto { color: var(--grigio); font-size: 14px; margin: 6px 0 0; }
+  .salva { position: fixed; left: 0; right: 0; bottom: 0; padding: 10px 16px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    background: rgba(244,246,249,.96); border-top: 1px solid var(--bordo); z-index: 5; }
+  .salva button, .principale { display: block; width: 100%; max-width: 528px; margin: 0 auto;
+    min-height: 56px; border: 0; border-radius: 12px; background: var(--blu); color: #fff;
+    font-size: 19px; font-weight: 700; }
+  .salva button:disabled { background: #9aa7b8; }
+  .stato { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--grigio);
+    margin-bottom: 12px; flex-wrap: wrap; }
+  .stato .rete { font-weight: 600; }
+  .stato .rete.si { color: var(--verde); }
+  .stato .rete.no { color: var(--rosso); }
+  .stato button { margin-left: auto; }
+  .avviso { background: #fff4e5; border: 1px solid #f0c27a; color: #6b3d00; border-radius: 10px;
+    padding: 10px 12px; font-size: 15px; margin-bottom: 12px; }
+  .avviso button { margin-top: 8px; }
+  .storico { list-style: none; padding: 0; margin: 0; font-size: 14px; }
+  .storico li { padding: 8px 0; border-top: 1px solid var(--bordo); display: flex; gap: 8px; }
+  .storico li:first-child { border-top: 0; }
+  .storico li div { flex: 1; }
+  .storico .etichetta { font-weight: 600; white-space: nowrap; }
+  .storico .etichetta.ok { color: var(--verde); }
+  .storico .etichetta.attesa { color: var(--arancio); }
+  .vuoto { color: var(--grigio); font-size: 14px; margin: 0; }
+  .toast { position: fixed; left: 16px; right: 16px; bottom: calc(90px + env(safe-area-inset-bottom));
+    max-width: 528px; margin: 0 auto; background: #1b1f24; color: #fff; border-radius: 10px;
+    padding: 14px 16px; font-size: 16px; opacity: 0; transform: translateY(10px);
+    transition: .25s; pointer-events: none; z-index: 10; }
+  .toast.vedi { opacity: 1; transform: none; }
+  .errore-campo { color: var(--rosso); font-size: 14px; margin: 6px 0 0; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Segnala copertura <small id="chiSono"></small></h1>
+  <button id="apriProfilo" hidden>Profilo</button>
+</header>
+
+<!-- Primo avvio: nome e numero, una volta sola -->
+<main id="profilo" hidden>
+  <div class="card">
+    <h2>I tuoi dati</h2>
+    <p class="aiuto" style="margin:0 0 12px">Li inserisci una volta sola: il telefono li ricorda e li aggiunge a ogni segnalazione.</p>
+    <label for="nome">Nome e cognome</label>
+    <input id="nome" autocomplete="name" placeholder="Mario Rossi">
+    <label for="sim">Numero della SIM di questo telefono</label>
+    <input id="sim" type="tel" inputmode="numeric" autocomplete="tel" placeholder="340 1234567">
+    <p class="errore-campo" id="erroreProfilo" hidden></p>
+    <label>La SIM di questo telefono è</label>
+    <div class="scelte" data-campo="operatore">
+      <button type="button" data-v="Vodafone">Vodafone</button>
+      <button type="button" data-v="Altro operatore">Altro operatore</button>
+    </div>
+  </div>
+  <button class="principale" id="salvaProfilo">Salva e inizia</button>
+</main>
+
+<!-- Schermata principale -->
+<main id="modulo" hidden>
+  <div class="stato">
+    <span class="rete" id="statoRete"></span>
+    <span id="statoCoda"></span>
+    <button class="secondario" id="inviaOra" hidden>Invia ora</button>
+  </div>
+
+  <div class="avviso" id="installa" hidden>
+    <span id="installaTesto"></span>
+    <div><button class="secondario" id="installaBtn" hidden>Installa l'app</button></div>
+  </div>
+
+  <div class="card">
+    <h2>Posizione</h2>
+    <div class="gps" id="gps">
+      <span class="pallino"></span>
+      <div><strong id="gpsTitolo">In attesa…</strong><span id="gpsDettaglio"></span></div>
+      <button class="secondario" id="gpsRiprova">Rileva</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Problema <span class="obb">*</span></h2>
+    <div class="scelte" data-campo="problema">
+      <button type="button" data-v="Nessun segnale">Nessun segnale</button>
+      <button type="button" data-v="Solo chiamate di emergenza (SOS)">Solo SOS</button>
+      <button type="button" data-v="Voce sì, internet no">Voce sì, internet no</button>
+      <button type="button" data-v="Internet molto lento">Internet lento</button>
+      <button type="button" data-v="Segnale intermittente">Segnale che va e viene</button>
+      <button type="button" data-v="Chiamate che cadono o disturbate">Chiamate cadono</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Tacche di segnale</h2>
+    <div class="scelte cinque" data-campo="tacche">
+      <button type="button" data-v="0">0</button>
+      <button type="button" data-v="1">1</button>
+      <button type="button" data-v="2">2</button>
+      <button type="button" data-v="3">3</button>
+      <button type="button" data-v="4">4</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Rete indicata sul telefono</h2>
+    <div class="scelte tre" data-campo="rete">
+      <button type="button" data-v="Nessuna">Nessuna</button>
+      <button type="button" data-v="2G / E">2G / E</button>
+      <button type="button" data-v="3G / H">3G / H</button>
+      <button type="button" data-v="4G / LTE">4G</button>
+      <button type="button" data-v="5G">5G</button>
+      <button type="button" data-v="Non so">Non so</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Dove ti trovi</h2>
+    <div class="scelte tre" data-campo="dove">
+      <button type="button" data-v="All'aperto">All'aperto</button>
+      <button type="button" data-v="Dentro un edificio">Dentro</button>
+      <button type="button" data-v="In auto">In auto</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Note</h2>
+    <textarea id="note" rows="2" placeholder="Facoltative: es. nome dell'impianto, da quanto succede…"></textarea>
+  </div>
+
+  <div class="card">
+    <h2>Le tue ultime segnalazioni</h2>
+    <ul class="storico" id="storico"></ul>
+  </div>
+</main>
+
+<div class="salva" id="barraSalva" hidden><button id="salva" disabled>Salva segnalazione</button></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="config.js"></script>
+<script src="coda.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const scelta = {};           // valori selezionati nei gruppi di pulsanti
+let posizione = null;        // miglior posizione trovata
+let idGps = null, timerGps = null;
+
+// ---------- Profilo (nome e SIM) ----------
+function leggiProfilo() {
+  try { return JSON.parse(localStorage.getItem('profilo')) || null; } catch { return null; }
+}
+function normalizzaNumero(v) {
+  return v.replace(/[\s.\-\/]/g, '').replace(/^(\+39|0039)/, '');
+}
+
+function mostraProfilo() {
+  const p = leggiProfilo() || {};
+  $('nome').value = p.nome || '';
+  $('sim').value = p.sim || '';
+  seleziona('operatore', p.operatore || null);
+  $('profilo').hidden = false;
+  $('modulo').hidden = true;
+  $('barraSalva').hidden = true;
+  $('apriProfilo').hidden = true;
+}
+
+$('salvaProfilo').onclick = () => {
+  const nome = $('nome').value.trim();
+  const sim = normalizzaNumero($('sim').value);
+  const err = $('erroreProfilo');
+  if (!nome) return mostraErrore('Scrivi nome e cognome.');
+  if (!/^3\d{8,9}$/.test(sim)) return mostraErrore('Il numero deve essere un cellulare italiano, es. 3401234567.');
+  if (!scelta.operatore) return mostraErrore('Indica se la SIM è Vodafone o di un altro operatore.');
+  try { localStorage.setItem('profilo', JSON.stringify({ nome, sim, operatore: scelta.operatore })); } catch {}
+  err.hidden = true;
+  avviaModulo();
+  function mostraErrore(t) { err.textContent = t; err.hidden = false; }
+};
+$('apriProfilo').onclick = mostraProfilo;
+
+// ---------- Pulsanti a scelta singola ----------
+document.querySelectorAll('.scelte').forEach((gruppo) => {
+  gruppo.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    const campo = gruppo.dataset.campo;
+    // un secondo tocco sullo stesso pulsante lo deseleziona
+    seleziona(campo, scelta[campo] === b.dataset.v ? null : b.dataset.v);
+    aggiornaSalva();
+  });
+});
+function seleziona(campo, valore) {
+  scelta[campo] = valore;
+  document.querySelectorAll(`[data-campo="${campo}"] button`).forEach((b) =>
+    b.setAttribute('aria-pressed', String(b.dataset.v === valore)));
+}
+
+// ---------- GPS (funziona anche senza rete: usa i satelliti) ----------
+function avviaGps() {
+  fermaGps();
+  posizione = null;
+  statoGps('cerca', 'Cerco la posizione…', 'Senza rete può servire qualche minuto, meglio all\'aperto.');
+  aggiornaSalva();
+  if (!('geolocation' in navigator)) return statoGps('errore', 'GPS non disponibile', 'Questo telefono non fornisce la posizione.');
+  idGps = navigator.geolocation.watchPosition((p) => {
+    const acc = Math.round(p.coords.accuracy);
+    if (!posizione || acc <= posizione.precisione) {
+      posizione = { lat: +p.coords.latitude.toFixed(6), lng: +p.coords.longitude.toFixed(6), precisione: acc };
+    }
+    const buona = posizione.precisione <= 30;
+    statoGps(buona ? 'buona' : 'scarsa',
+      buona ? 'Posizione trovata' : 'Posizione approssimativa, sto migliorando…',
+      `Precisione ±${posizione.precisione} m · ${posizione.lat}, ${posizione.lng}`);
+    if (posizione.precisione <= 10) fermaGps();
+    aggiornaSalva();
+  }, (e) => {
+    if (posizione) return;
+    const msg = e.code === 1
+      ? ['Posizione non consentita', 'Consenti l\'accesso alla posizione nelle impostazioni del browser, poi premi Rileva.']
+      : ['Posizione non trovata', 'Spostati all\'aperto e premi Rileva.'];
+    statoGps('errore', msg[0], msg[1]);
+    aggiornaSalva();
+  }, { enableHighAccuracy: true, maximumAge: 0, timeout: 120000 });
+  // dopo 2 minuti ci si tiene la posizione migliore trovata
+  timerGps = setTimeout(fermaGps, 120000);
+}
+function fermaGps() {
+  if (idGps !== null) navigator.geolocation.clearWatch(idGps);
+  clearTimeout(timerGps);
+  idGps = null;
+}
+function statoGps(classe, titolo, dettaglio) {
+  $('gps').className = 'gps ' + classe;
+  $('gpsTitolo').textContent = titolo;
+  $('gpsDettaglio').textContent = dettaglio;
+}
+$('gpsRiprova').onclick = avviaGps;
+
+// ---------- Salvataggio ----------
+function aggiornaSalva() {
+  const b = $('salva');
+  b.disabled = !scelta.problema;
+  b.textContent = !scelta.problema ? 'Scegli il problema'
+    : posizione ? 'Salva segnalazione' : 'Salva senza posizione';
+}
+
+$('salva').onclick = async () => {
+  if (!posizione && !confirm('La posizione non è ancora stata trovata. Salvare lo stesso? (Scrivi nelle note dove ti trovi)')) return;
+  const p = leggiProfilo();
+  const s = {
+    id: (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(16).slice(2)),
+    dataOra: new Date().toISOString(),
+    nome: p.nome, sim: p.sim, operatore: p.operatore,
+    lat: posizione ? posizione.lat : '', lng: posizione ? posizione.lng : '',
+    precisione: posizione ? posizione.precisione : '',
+    problema: scelta.problema, tacche: scelta.tacche ?? '', rete: scelta.rete || '',
+    dove: scelta.dove || '', note: $('note').value.trim(),
+    inviata: false
+  };
+  await Coda.aggiungi(s);
+  ['problema', 'tacche', 'rete', 'dove'].forEach((c) => seleziona(c, null));
+  $('note').value = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const partite = await provaInvio();
+  toast(partite ? 'Segnalazione salvata e inviata ✓'
+    : 'Segnalazione salvata nel telefono. Verrà inviata appena torna il segnale.');
+  avviaGps();
+};
+
+// ---------- Invio della coda ----------
+let inviando = false;
+async function provaInvio() {
+  if (inviando) return 0;
+  inviando = true;
+  let partite = 0;
+  try {
+    if (navigator.onLine) partite = await Coda.invia();
+    else chiediSyncInBackground();
+  } catch (e) {
+    console.warn('Invio non riuscito:', e.message);
+    chiediSyncInBackground();
+  } finally {
+    inviando = false;
+    await aggiornaStato();
+  }
+  return partite;
+}
+async function chiediSyncInBackground() {
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    if (reg.sync) await reg.sync.register('invia-segnalazioni');
+  } catch {}
+}
+$('inviaOra').onclick = async () => {
+  const n = await provaInvio();
+  toast(n ? `Inviate ${n} segnalazioni ✓` : 'Invio non riuscito: riprovo appena c\'è segnale.');
+};
+
+async function aggiornaStato() {
+  const online = navigator.onLine;
+  $('statoRete').textContent = online ? '● Connesso' : '● Senza rete';
+  $('statoRete').className = 'rete ' + (online ? 'si' : 'no');
+  const tutte = (await Coda.tutte()).sort((a, b) => b.dataOra.localeCompare(a.dataOra));
+  const attesa = tutte.filter((s) => !s.inviata).length;
+  $('statoCoda').textContent = attesa ? `${attesa} in attesa di invio` : 'Tutto inviato';
+  $('inviaOra').hidden = !attesa;
+  const ul = $('storico');
+  ul.innerHTML = '';
+  if (!tutte.length) { ul.innerHTML = '<li><p class="vuoto">Nessuna segnalazione ancora.</p></li>'; return; }
+  tutte.slice(0, 15).forEach((s) => {
+    const li = document.createElement('li');
+    const quando = new Date(s.dataOra).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    li.innerHTML = '<div><strong></strong><br><span></span></div><span class="etichetta"></span>';
+    li.querySelector('strong').textContent = s.problema;
+    li.querySelector('div span').textContent = quando + (s.lat ? ` · ${s.lat}, ${s.lng}` : ' · senza posizione');
+    const et = li.querySelector('.etichetta');
+    et.textContent = s.inviata ? 'Inviata' : 'In attesa';
+    et.classList.add(s.inviata ? 'ok' : 'attesa');
+    ul.appendChild(li);
+  });
+}
+
+// quando torna il segnale o si riapre l'app, riprova a inviare
+window.addEventListener('online', provaInvio);
+window.addEventListener('offline', aggiornaStato);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) provaInvio(); });
+setInterval(() => { if (navigator.onLine) provaInvio(); }, 60000);
+
+function toast(t) {
+  const el = $('toast');
+  el.textContent = t;
+  el.classList.add('vedi');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('vedi'), 4000);
+}
+
+// ---------- Installazione sulla schermata Home ----------
+let promptInstalla = null;
+const installata = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  promptInstalla = e;
+  if (!installata) {
+    $('installaTesto').textContent = 'Installa l\'app: così la apri anche dove non c\'è segnale.';
+    $('installaBtn').hidden = false;
+    $('installa').hidden = false;
+  }
+});
+$('installaBtn').onclick = async () => {
+  if (!promptInstalla) return;
+  promptInstalla.prompt();
+  await promptInstalla.userChoice;
+  $('installa').hidden = true;
+};
+if (!installata && /iphone|ipad|ipod/i.test(navigator.userAgent)) {
+  $('installaTesto').textContent = 'Per usarla anche senza segnale: tocca il pulsante Condividi (il quadrato con la freccia) e poi "Aggiungi alla schermata Home".';
+  $('installa').hidden = false;
+}
+
+// ---------- Avvio ----------
+function avviaModulo() {
+  const p = leggiProfilo();
+  $('chiSono').textContent = `${p.nome} · ${p.sim}`;
+  $('profilo').hidden = true;
+  $('modulo').hidden = false;
+  $('barraSalva').hidden = false;
+  $('apriProfilo').hidden = false;
+  aggiornaSalva();
+  aggiornaStato();
+  provaInvio();
+  avviaGps();
+}
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+leggiProfilo() ? avviaModulo() : mostraProfilo();
+</script>
+</body>
+</html>
