@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invia l'app ai colleghi</title>
+<link rel="icon" href="icon-192.png">
+<style>
+  body { margin: 0; background: #f4f6f9; color: #1b1f24;
+    font: 17px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 520px; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 22px; margin: 0 0 8px; color: #0d47a1; }
+  p { margin: 0 0 16px; color: #5f6b7a; }
+  pre { white-space: pre-wrap; background: #fff; border: 1px solid #cfd6df; border-radius: 12px;
+    padding: 14px; font: 15px/1.45 system-ui, sans-serif; margin: 0 0 16px; }
+  a.btn, button { display: block; width: 100%; text-align: center; min-height: 56px; line-height: 56px;
+    border: 0; border-radius: 12px; font-size: 18px; font-weight: 700; text-decoration: none; margin-bottom: 10px; }
+  a.btn { background: #1b7f3b; color: #fff; }
+  button { background: #fff; color: #0d47a1; border: 2px solid #0d47a1; line-height: 52px; font-family: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Invia l'app ai colleghi</h1>
+  <p>Premi il pulsante verde: si apre WhatsApp con il messaggio già scritto, scegli il collega o il gruppo e invia.</p>
+  <a class="btn" id="wa" href="#">Invia su WhatsApp</a>
+  <button id="copia">Copia il messaggio</button>
+  <pre id="testo">Ciao, per la verifica della copertura con Vodafone ci serve sapere dove il telefono non prende. Ho preparato una piccola app:
+https://coordinategaia-cpu.github.io/copertura/
+
+1. Aprila adesso, *mentre hai segnale*, e scrivi nome e numero del tuo telefono (una volta sola).
+2. Installala sulla schermata Home. Android: tasto "Installa l'app". iPhone: Condividi → "Aggiungi alla schermata Home".
+3. Quando sei in un punto dove il telefono non prende o prende male, aprila, aspetta che trovi la posizione, tocca il problema e premi *Salva*. Ci vogliono dieci secondi.
+
+Quando sei sul posto *non usare il link*: apri l'icona "Copertura" dalla schermata Home, funziona anche senza segnale.
+
+Se non c'è segnale, la segnalazione resta nel telefono e parte da sola quando il segnale torna. La posizione viene registrata solo quando premi Salva, non ti segue durante il giro.
+
+Grazie, Saluti</pre>
+</main>
+<script>
+  const testo = document.getElementById('testo').textContent;
+  document.getElementById('wa').href = 'https://wa.me/?text=' + encodeURIComponent(testo);
+  document.getElementById('copia').onclick = async (e) => {
+    try { await navigator.clipboard.writeText(testo); e.target.textContent = 'Copiato ✓'; }
+    catch { e.target.textContent = 'Tieni premuto sul testo per copiarlo'; }
+  };
+</script>
+</body>
+</html>
