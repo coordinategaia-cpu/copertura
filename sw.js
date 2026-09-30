@@ -1,7 +1,7 @@
 // Tiene l'app nel telefono per aprirla senza rete e invia la coda quando torna il segnale.
 importScripts('config.js', 'coda.js');
 
-const VERSIONE = 'copertura-v1';
+const VERSIONE = 'copertura-v2';
 const FILE = ['./', 'index.html', 'config.js', 'coda.js', 'manifest.webmanifest',
   'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 
@@ -19,6 +19,7 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
+  if (url.searchParams.has('misura')) return;   // la misura della connessione deve andare in rete
   e.respondWith(caches.open(VERSIONE).then(async (cache) => {
     const salvata = await cache.match(e.request, { ignoreSearch: true });
     const dallaRete = fetch(e.request)
